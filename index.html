@@ -380,16 +380,28 @@ img{max-width:100%}
     var t = $("toast"); t.textContent = msg; t.hidden = false;
     clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.hidden = true; }, 2800);
   }
+  // 수집 결과(data/jobs.json)가 있으면 내장 목록 대신 사용. 실패하면 내장 목록 그대로.
+  function loadJobs() {
+    return fetch("data/jobs.json", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (!d || !d.jobs || !d.jobs.length) return false;
+      JOBS = d.jobs;
+      var t = new Date(d.updated);
+      $("upd").textContent = "마지막 수집 " + t.getFullYear() + "." + pad(t.getMonth() + 1) + "." + pad(t.getDate()) + " " + hhmm(t) + " · 약 30분마다";
+      render();
+      return true;
+    }).catch(function () { return false; });
+  }
   $("refresh").addEventListener("click", function () {
     var btn = this; btn.disabled = true; btn.classList.add("spin"); $("refreshLabel").textContent = "불러오는 중";
-    setTimeout(function () {
-      lastUpdated = new Date(); renderUpd(); render();
+    loadJobs().then(function (ok) {
       btn.disabled = false; btn.classList.remove("spin"); $("refreshLabel").textContent = "전체 새로고침";
-      toast("직접 확인한 6건을 다시 그렸어요. 자동 수집이 연결되면 새 공고가 여기에 붙어요.");
-    }, 700);
+      toast(ok ? "최신 수집 결과를 불러왔어요." : "수집 결과를 못 불러왔어요. 내장 목록을 그대로 보여줘요.");
+    });
   });
 
   renderUpd(); render();
+
+  loadJobs();
 })();
 </script>
 
