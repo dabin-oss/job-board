@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-03T12:48:32.196Z",
+ "updated": "2026-10-03T13:04:19.648Z",
  "sources": {
   "saramin": 0,
   "manual": 23
@@ -75,7 +75,8 @@
    "co": "푸드로직",
    "ti": "외식업 원가관리 및 발주 AI SaaS PM",
    "role": [
-    "PM"
+    "PM",
+    "AIPM"
    ],
    "car": "경력 1년 이상",
    "tier": "?",
@@ -134,7 +135,9 @@
    "ti": "AI 디자인 PM",
    "role": [
     "PD",
-    "PM"
+    "PM",
+    "AIPD",
+    "AIPM"
    ],
    "car": "경력 무관",
    "tier": "?",

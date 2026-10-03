@@ -4,12 +4,16 @@ import { readFileSync, writeFileSync } from "node:fs";
 
 const KEY = process.env.SARAMIN_KEY || "";
 const manual = JSON.parse(readFileSync("data/manual.json", "utf8")).jobs;
-const QUERIES = ["프로덕트 디자이너", "UX UI 디자이너", "서비스 기획", "PM 프로덕트 매니저"];
+const QUERIES = ["프로덕트 디자이너", "UX UI 디자이너", "서비스 기획", "PM 프로덕트 매니저", "AI 프로덕트 디자이너", "AX 디자이너", "AX 기획", "AI 서비스 기획", "AI PM"];
 
 function roleOf(title) {
   const r = [];
   if (/프로덕트\s*디자|product\s*design|ux\s*\/?\s*ui|ui\s*\/?\s*ux|ux\s*디자|ui\s*디자/i.test(title)) r.push(/ux|ui/i.test(title) ? "UXUI" : "PD");
   if (/pm|po|기획|product\s*(manager|owner)|프로덕트\s*매니저/i.test(title)) r.push("PM");
+  const ai = /\bai\b|인공지능|llm|생성형/i.test(title);
+  if (ai && r.some((x) => x === "PD" || x === "UXUI")) r.push("AIPD");
+  if (ai && r.includes("PM")) r.push("AIPM");
+  if (/\bax\b/i.test(title)) r.push("AX");
   return [...new Set(r)];
 }
 function careerOk(exp) {
