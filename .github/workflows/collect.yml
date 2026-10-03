@@ -20,9 +20,14 @@ jobs:
         env:
           SARAMIN_KEY: ${{ secrets.SARAMIN_KEY }}
         run: node scripts/collect.mjs
+      - name: Commute time
+        env:
+          KAKAO_REST_KEY: ${{ secrets.KAKAO_REST_KEY }}
+          ODSAY_KEY: ${{ secrets.ODSAY_KEY }}
+        run: node scripts/commute.mjs
       - name: Commit if changed
         run: |
           git config user.name "job-board-bot"
           git config user.email "actions@users.noreply.github.com"
-          git add data/jobs.json
+          git add data/jobs.json data/commute-cache.json
           git diff --cached --quiet || (git commit -m "chore: update jobs" && git push)

@@ -139,7 +139,7 @@ img{max-width:100%}
     <div class="stats" id="stats" aria-live="polite"></div>
   </header>
 
-  <div class="notice">2026.10.03에 크롬으로 공고 페이지를 직접 열어 확인한 6건만 담았어요. 점수와 한 줄 이유는 내가 공고 내용으로 매긴 추정값이고, 통근 시간은 아직 계산 전이에요. 자동 수집은 연결 전이라 새 공고는 자동으로 늘지 않아요.</div>
+  <div class="notice">2026.10.03에 크롬으로 공고 페이지를 직접 열어 확인한 공고만 담았어요. 점수와 한 줄 이유는 내가 공고 내용으로 매긴 추정값이고, 통근 시간은 아직 계산 전이에요. 자동 수집은 연결 전이라 새 공고는 자동으로 늘지 않아요.</div>
 
   <section aria-labelledby="h-plat" style="display:flex;flex-direction:column;gap:10px">
     <h2 id="h-plat">수집 플랫폼</h2>
@@ -211,7 +211,7 @@ img{max-width:100%}
 
   <details class="excl-wrap"><summary>열어봤지만 뺀 공고</summary><ul class="excl" id="excl"></ul></details>
 
-  <p class="foot">지원 상태는 이 브라우저에만 저장돼요. 다른 기기와는 공유되지 않아요. 같은 공고가 여러 플랫폼에 올라온 경우는 한 카드로 묶고 출처 칩을 늘려요. 이번에 확인한 6건은 그룹바이에만 있었어요. 점수는 직무·경력·도메인·업무 키워드 합계이고 근무지 점수는 통근 계산 후에 더해져요.</p>
+  <p class="foot">지원 상태는 이 브라우저에만 저장돼요. 다른 기기와는 공유되지 않아요. 같은 공고가 여러 플랫폼에 올라온 경우는 한 카드로 묶고 출처 칩을 늘려요. 페이업은 사람인과 잡코리아에서 같이 확인돼서 한 카드로 묶었어요. 점수는 직무·경력·도메인·업무 키워드 합계이고 근무지 점수는 통근 계산 후에 더해져요.</p>
 </main>
 <div class="toast" id="toast" hidden></div>
 
@@ -225,6 +225,7 @@ img{max-width:100%}
 
   // 2026-10-03 크롬에서 공고 페이지를 직접 열어 확인한 공고만 담음. 점수(s)와 why는 추정값.
   var VERIFIED = "2026.10.03";
+  var RELAY_URL = ""; // Cloudflare Worker 주소를 넣으면 "수집 즉시 실행"이 켜져요 (worker/README.md)
   var G = "https://groupby.kr/positions/";
   var JOBS = [
     { id: "g11331", co: "푸드로직", ti: "외식업 원가관리 및 발주 AI SaaS PM", role: ["PM"], car: "경력 1년 이상", tier: "?", area: "서울 영등포구", addr: "서울 영등포구 신풍로 28 비스타동원 2층", size: "5인", dead: null, newTag: true, src: [{ n: "그룹바이", u: G + "11331" }], s: [24, 20, 10, 13], why: "PRD, 와이어프레임, QA, 데이터 분석이 지금 업무와 겹쳐요 (추측)", note: "원격근무 없음 · 서비스 리뉴얼 중간 합류 · 서류, 1차, 2차 면접" },
@@ -244,12 +245,21 @@ img{max-width:100%}
     { t: "밀레니얼웍스", r: "5~15년 리딩 포지션" }
   ];
 
-  var PLATS = [
-    { n: "그룹바이", cad: "10.03 직접 확인 6건", st: "수동 확인", cls: "", note: "크롬으로 공고 페이지를 열어 확인. 자동 수집은 연결 전" },
-    { n: "원티드", cad: "후보 2건 확인", st: "반영 0건", cls: "wait", note: "열어본 2건이 모두 마감이라 제외. 공식 키 신청 전" },
-    { n: "사람인", cad: "아직 확인 전", st: "미반영", cls: "wait", note: "공식 API 신청 전. 검색 결과만으로는 반영하지 않았어요" },
-    { n: "잡코리아 · 리멤버 · 로켓펀치", cad: "아직 확인 전", st: "미반영", cls: "off", note: "열어서 확인한 공고가 없어 담지 않았어요" }
+  var PLAT_META = [
+    { n: "사람인", st: "수동 확인", cls: "", note: "공식 API 승인 대기 중. 승인되면 약 30분마다 자동 수집" },
+    { n: "잡코리아", st: "수동 확인", cls: "", note: "공식 API 대상이 아니라 열어서 확인한 공고만 반영" },
+    { n: "그룹바이", st: "수동 확인", cls: "", note: "열어서 확인한 공고만 반영. 자동 수집은 연결 전" },
+    { n: "원티드", st: "반영 0건", cls: "wait", note: "열어본 2건이 모두 마감. OpenAPI는 사업자등록번호가 필요해서 개인 신청이 어려워요" },
+    { n: "리멤버 · 로켓펀치", st: "미확인", cls: "off", note: "아직 열어서 확인하지 않았어요" }
   ];
+  function renderPlats() {
+    $("plats").innerHTML = PLAT_META.map(function (p) {
+      var c = JOBS.filter(function (j) { return j.src.some(function (x) { return x.n === p.n; }); }).length;
+      var cad = c ? (VERIFIED + " 직접 확인 " + c + "건") : "반영된 공고 없음";
+      return '<div class="plat"><div class="plat-top"><span class="plat-name">' + p.n + '</span><span class="pill ' + p.cls + '">' + p.st + '</span></div>' +
+        '<div class="plat-cad">' + cad + '</div><div class="plat-note">' + p.note + '</div></div>';
+    }).join("");
+  }
 
   var state = { roles: [], tier: "all", dead: "all", plat: "all", stat: "all", onlyNew: false, sort: "score" };
   var saved = {};
@@ -338,8 +348,20 @@ img{max-width:100%}
     $("stats").innerHTML = s(live.length, "공고") + s(nNew, "NEW 표시") + s(nDue, "마감 임박") + s(nFav, "관심") + s(nApp, "지원함");
   }
 
+  var updText = "마지막 확인 " + VERIFIED + " · 자동 수집 연결 전";
   function renderUpd() {
-    $("upd").textContent = "마지막 확인 " + VERIFIED + " · 자동 수집 연결 전";
+    $("upd").innerHTML = updText + ' · <button type="button" id="runNow"' + (RELAY_URL ? "" : " disabled") + ' title="' + (RELAY_URL ? "수집을 지금 실행해요" : "중계 서버를 연결하면 쓸 수 있어요") + '">수집 즉시 실행</button>';
+    var b = $("runNow");
+    if (b && RELAY_URL) {
+      b.style.cursor = "pointer";
+      b.addEventListener("click", function () {
+        b.disabled = true;
+        fetch(RELAY_URL, { method: "POST" }).then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { s: r.status, d: d }; }); })
+          .then(function (x) { toast(x.d.ok ? "수집을 시작했어요. 1~2분 뒤 새로고침을 눌러주세요." : (x.d.reason === "cooldown" ? "방금 실행했어요. 5분 뒤에 다시 눌러주세요." : "실행하지 못했어요.")); })
+          .catch(function () { toast("실행하지 못했어요."); })
+          .then(function () { b.disabled = false; });
+      });
+    }
   }
 
   function render() {
@@ -350,11 +372,6 @@ img{max-width:100%}
   }
 
   $("excl").innerHTML = EXCL.map(function (x) { return '<li><b>' + x.t + '</b> ' + x.r + '</li>'; }).join("");
-
-  $("plats").innerHTML = PLATS.map(function (p) {
-    return '<div class="plat"><div class="plat-top"><span class="plat-name">' + p.n + '</span><span class="pill ' + p.cls + '">' + p.st + '</span></div>' +
-      '<div class="plat-cad">' + p.cad + '</div><div class="plat-note">' + p.note + '</div></div>';
-  }).join("");
 
   $("roleChips").addEventListener("click", function (e) {
     var b = e.target.closest("button[data-role]"); if (!b) return;
@@ -386,8 +403,8 @@ img{max-width:100%}
       if (!d || !d.jobs || !d.jobs.length) return false;
       JOBS = d.jobs;
       var t = new Date(d.updated);
-      $("upd").textContent = "마지막 수집 " + t.getFullYear() + "." + pad(t.getMonth() + 1) + "." + pad(t.getDate()) + " " + hhmm(t) + " · 약 30분마다";
-      render();
+      updText = "마지막 수집 " + t.getFullYear() + "." + pad(t.getMonth() + 1) + "." + pad(t.getDate()) + " " + hhmm(t) + " · 약 30분마다"; renderUpd();
+      render(); renderPlats();
       return true;
     }).catch(function () { return false; });
   }
@@ -399,7 +416,7 @@ img{max-width:100%}
     });
   });
 
-  renderUpd(); render();
+  renderUpd(); render(); renderPlats();
 
   loadJobs();
 })();

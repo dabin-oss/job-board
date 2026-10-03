@@ -52,6 +52,15 @@ function fromSaramin(x) {
   };
 }
 
+// manual의 deadDate(YYYY-MM-DD)를 오늘 기준 남은 일수로 바꾸고, 지난 공고는 뺌 (한국 시간 기준)
+const todayKst = new Date(Date.now() + 9 * 3600000).toISOString().slice(0, 10);
+const dayDiff = (d) => Math.round((Date.parse(d) - Date.parse(todayKst)) / 86400000);
+const manualLive = [];
+for (const j of manual) {
+  if (j.deadDate) { j.dead = dayDiff(j.deadDate); if (j.dead < 0) continue; }
+  manualLive.push(j);
+}
+
 let auto = [];
 if (KEY) {
   try {
@@ -67,11 +76,11 @@ if (KEY) {
 
 // 합치기: 같은 공고는 하나로 묶고 출처만 늘림
 const map = new Map();
-for (const j of [...manual, ...auto]) {
+for (const j of [...manualLive, ...auto]) {
   const k = dupKey(j);
   if (map.has(k)) { const t = map.get(k); for (const s of j.src) if (!t.src.some((y) => y.n === s.n)) t.src.push(s); }
   else map.set(k, j);
 }
-const out = { updated: new Date().toISOString(), sources: { saramin: auto.length, manual: manual.length }, jobs: [...map.values()] };
+const out = { updated: new Date().toISOString(), sources: { saramin: auto.length, manual: manualLive.length }, jobs: [...map.values()] };
 writeFileSync("data/jobs.json", JSON.stringify(out, null, 1));
 console.log("jobs", out.jobs.length, out.sources);
