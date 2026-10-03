@@ -1,4 +1,4 @@
-// 통근 시간 계산: 카카오 로컬(주소 좌표) + ODsay(대중교통 소요시간) + 카카오모빌리티(안성 기준 자동차).
+// 통근 시간 계산: 카카오 로컬(주소 좌표) + ODsay(대중교통 소요시간).
 // 결과는 data/commute-cache.json에 주소별로 저장해 재호출을 막음. ODsay 무료는 하루 30회라 한 번에 최대 MAX_NEW건만 새로 계산.
 // API 응답 필드는 공식 문서 기억 기반이라 키 발급 후 첫 실행에서 검증 필요 (추측).
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -33,12 +33,11 @@ async function driveMin(o, p) {
   const s = d?.routes?.[0]?.summary?.duration;
   return typeof s === "number" ? Math.round(s / 60) : null;
 }
-const tierOf = (m) => (m <= 30 ? "1" : m <= 60 ? "2" : null);
+const tierOf = (m) => (m <= 15 ? "0" : m <= 30 ? "1" : m <= 60 ? "2" : "X");
 const stationName = (addr) => addr.replace(/\(.*?\)/g, "").trim();
 
 if (KAKAO && ODSAY) {
   const home = await geocode("애오개역 5호선");
-  const ansung = await geocode("경기 안성시청");
   let used = 0;
   for (const j of data.jobs) {
     const key = stationName(j.addr || j.area || "");
@@ -49,7 +48,6 @@ if (KAKAO && ODSAY) {
         if (p && home) {
           const c = { transit: await transitMin(home, p) };
           used++;
-          if ((c.transit == null || c.transit > 60) && ansung) c.drive = await driveMin(ansung, p);
           cache[key] = c;
         }
       } catch (e) { console.error("통근 계산 실패:", key, e.message); }
@@ -62,11 +60,9 @@ writeFileSync(cachePath, JSON.stringify(cache, null, 1));
 for (const j of data.jobs) {
   const key = stationName(j.addr || j.area || "");
   const c = cache[key];
-  if (/안성시/.test(j.addr || "")) { j.tier = "3"; continue; }
   if (!c) continue;
   const t = c.transit != null ? tierOf(c.transit) : null;
-  if (t) { j.tier = t; j.min = c.transit; j.mode = "대중교통"; }
-  else if (c.drive != null && c.drive <= 30) { j.tier = "4"; j.min = c.drive; j.mode = "운전"; }
+  if (t) { j.tier = t; j.min = c.transit; j.mode = t === "0" ? "도보" : "대중교통"; }
 }
 writeFileSync("data/jobs.json", JSON.stringify(data, null, 1));
 console.log("통근 반영 완료", Object.keys(cache).length, "주소 캐시");

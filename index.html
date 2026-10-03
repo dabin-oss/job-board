@@ -162,10 +162,9 @@ img{max-width:100%}
       <div class="field"><label for="fTier">지역</label>
         <select id="fTier">
           <option value="all">전체</option>
+          <option value="0">도보 가능</option>
           <option value="1">애오개역 30분 이내</option>
           <option value="2">애오개역 1시간 이내</option>
-          <option value="3">안성</option>
-          <option value="4">안성 근처 (운전)</option>
           <option value="R">원격·재택</option>
           <option value="?">통근 미계산</option>
         </select></div>
@@ -223,8 +222,8 @@ img{max-width:100%}
   var BASE = new Date(); BASE.setHours(0, 0, 0, 0);
   var KEY = "jobboard-status-v1";
   var STATUSES = ["관심", "지원함", "보류", "제외"];
-  var LOC_PTS = { "1": 10, "2": 7, "3": 5, "4": 3, "R": 0, "?": 0 };
-  var TIER_LABEL = { "1": "애오개역 30분 이내", "2": "애오개역 1시간 이내", "3": "안성", "4": "안성 근처 · 운전 30분 이내", "R": "원격·재택", "?": "통근 시간 미계산" };
+  var LOC_PTS = { "0": 10, "1": 10, "2": 7, "R": 0, "?": 0 };
+  var TIER_LABEL = { "0": "애오개역 도보 가능", "1": "애오개역 30분 이내", "2": "애오개역 1시간 이내", "X": "1시간 초과", "R": "원격·재택", "?": "통근 시간 미계산" };
 
   // 2026-10-03 크롬에서 공고 페이지를 직접 열어 확인한 공고만 담음. 점수(s)와 why는 추정값.
   var VERIFIED = "2026.10.03";
@@ -283,6 +282,7 @@ img{max-width:100%}
     var list = JOBS.filter(function (j) {
       var st = saved[j.id] || "";
       if (state.roles.length && !j.role.some(function (r) { return state.roles.indexOf(r) >= 0; })) return false;
+      if (j.tier === "X") return false;
       if (state.tier !== "all" && j.tier !== state.tier) return false;
       if (state.plat !== "all" && !j.src.some(function (x) { return x.n === state.plat; })) return false;
       if (state.onlyNew && !j.newTag) return false;
@@ -312,9 +312,7 @@ img{max-width:100%}
     if (j.dead !== null && j.dead <= 3) badges += '<span class="tag d">마감 임박</span>';
     if (j.tier === "R") badges += '<span class="tag r">원격</span>';
     var sub;
-    if (j.tier === "1" || j.tier === "2") sub = j.area + ' · <span class="mono">' + j.min + '분</span> · ' + j.mode;
-    else if (j.tier === "3") sub = j.area;
-    else if (j.tier === "4") sub = j.area + ' · 운전 <span class="mono">' + j.min + '분</span>';
+    if (j.tier === "0" || j.tier === "1" || j.tier === "2") sub = j.area + ' · <span class="mono">' + j.min + '분</span> · ' + j.mode;
     else sub = j.area + " · 통근 미계산";
     var dl = dd ? (fmtDate(dd) + " · D-" + (j.dead === 0 ? "Day" : j.dead)) : "마감일 표기 없음 (공고 페이지 기준)";
     var srcs = j.src.map(function (x) { return '<a class="src" href="' + x.u + '" target="_blank" rel="noopener noreferrer">' + x.n + '</a>'; }).join("");
