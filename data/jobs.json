@@ -1,5 +1,5 @@
 {
- "updated": "2026-10-12T11:09:47.105Z",
+ "updated": "2026-10-12T20:22:20.765Z",
  "sources": {
   "saramin": 0,
   "manual": 17
@@ -18,7 +18,7 @@
    "area": "서울 강남구",
    "addr": "서울 강남구 테헤란로 447 KB우준타워 16층",
    "size": "50인 이하 · 설립 10년 이상",
-   "dead": 19,
+   "dead": 18,
    "deadDate": "2026-10-31",
    "newTag": true,
    "src": [
@@ -261,7 +261,7 @@
    "area": "서울 동대문구",
    "addr": "서울 동대문구",
    "size": "규모 미확인",
-   "dead": 13,
+   "dead": 12,
    "deadDate": "2026-10-25",
    "newTag": false,
    "src": [
@@ -291,7 +291,7 @@
    "area": "서울 강남구",
    "addr": "서울 강남구",
    "size": "규모 미확인",
-   "dead": 20,
+   "dead": 19,
    "deadDate": "2026-11-01",
    "newTag": false,
    "src": [
@@ -322,7 +322,7 @@
    "area": "경기 성남시 수정구",
    "addr": "경기 성남시 수정구",
    "size": "규모 미확인",
-   "dead": 20,
+   "dead": 19,
    "deadDate": "2026-11-01",
    "newTag": false,
    "src": [
@@ -386,7 +386,7 @@
    "area": "서울 마포구",
    "addr": "서울 마포구",
    "size": "규모 미확인",
-   "dead": 20,
+   "dead": 19,
    "deadDate": "2026-11-01",
    "newTag": false,
    "src": [
@@ -416,7 +416,7 @@
    "area": "서울 마포구, 강서구, 영등포구",
    "addr": "서울 마포구, 강서구, 영등포구",
    "size": "규모 미확인",
-   "dead": 17,
+   "dead": 16,
    "deadDate": "2026-10-29",
    "newTag": false,
    "src": [
@@ -507,7 +507,7 @@
    "area": "서울 마포구 서교동",
    "addr": "서울 마포구 잔다리로 39 4층 (합정역 도보 7분)",
    "size": "중소기업 · 51~300명",
-   "dead": 3,
+   "dead": 2,
    "deadDate": "2026-10-15",
    "newTag": false,
    "src": [
